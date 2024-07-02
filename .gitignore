@@ -1,0 +1,10 @@
+.vs
+*.asv
+Debug
+Debug_SN*
+*.atzip
+.atmel-start-backup
+*.sr
+*.bak
+*.log
+desktop.ini
