@@ -12,8 +12,6 @@
 extern "C" {
 #endif
 
-void PM_I2C_example(void);
-
 void ADC_I2C_example(void);
 
 void MS_I2C_example(void);

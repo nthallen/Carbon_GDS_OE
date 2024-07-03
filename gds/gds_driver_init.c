@@ -1,7 +1,12 @@
 /*
- * This file is based on code originally generated from Atmel START as driver_init.c
- * Whenever the Atmel START project is updated, changes to driver_init.c must be
- * reviewed and copied here as appropriate.
+ * This file is based on code originally generated from Atmel START as
+ * driver_init.c. Whenever the Atmel START project is updated, changes
+ * to driver_init.c must be reviewed and copied here as appropriate or
+ * to another source file.
+ * 
+ * At least as of 7/3/2024, this file has been removed from the
+ * project, with all initializations delegated to the reset functions
+ * of the relevant subbus modules.
  */
 
 #include "gds_driver_init.h"
@@ -9,50 +14,9 @@
 #include <utils.h>
 #include <hal_init.h>
 
-struct i2c_m_async_desc PM_I2C;
-
 struct i2c_m_async_desc ADC_I2C;
 
 struct i2c_m_async_desc MS_I2C;
-
-void PM_I2C_PORT_init(void)
-{
-
-	gpio_set_pin_pull_mode(C3P_SDA,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
-
-	gpio_set_pin_function(C3P_SDA, PINMUX_PA16C_SERCOM1_PAD0);
-
-	gpio_set_pin_pull_mode(C3P_SCL,
-	                       // <y> Pull configuration
-	                       // <id> pad_pull_config
-	                       // <GPIO_PULL_OFF"> Off
-	                       // <GPIO_PULL_UP"> Pull-up
-	                       // <GPIO_PULL_DOWN"> Pull-down
-	                       GPIO_PULL_OFF);
-
-	gpio_set_pin_function(C3P_SCL, PINMUX_PA17C_SERCOM1_PAD1);
-}
-
-void PM_I2C_CLOCK_init(void)
-{
-	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_CORE, CONF_GCLK_SERCOM1_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM1_GCLK_ID_SLOW, CONF_GCLK_SERCOM1_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-
-	hri_mclk_set_APBAMASK_SERCOM1_bit(MCLK);
-}
-
-void PM_I2C_init(void)
-{
-	PM_I2C_CLOCK_init();
-	i2c_m_async_init(&PM_I2C, SERCOM1);
-	PM_I2C_PORT_init();
-}
 
 void ADC_I2C_PORT_init(void)
 {
@@ -254,8 +218,6 @@ void system_init(void)
     // All additional GPIO initializations moved to commands.c :
     //   CAL_HI, CAL_LO, CAL_REF, CO2_REF, CAL_SPR, MM_PUMP, 
     //   MM_EXH, CO2_PUMP, CO2_EXH, CKT3_EN, INV_ARM
-    
-	PM_I2C_init();
 
 	ADC_I2C_init();
 

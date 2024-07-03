@@ -24,23 +24,15 @@ extern "C" {
 #include <hal_i2c_m_async.h>
 
 #include <hal_i2c_m_async.h>
-
-#include <hal_i2c_m_async.h>
 #include <hal_timer.h>
 #include <hpl_tc_base.h>
 
 #include "hal_usb_device.h"
 
-extern struct i2c_m_async_desc PM_I2C;
-
 extern struct i2c_m_async_desc ADC_I2C;
 
 extern struct i2c_m_async_desc MS_I2C;
 extern struct timer_descriptor TIMER_0;
-
-void PM_I2C_PORT_init(void);
-void PM_I2C_CLOCK_init(void);
-void PM_I2C_init(void);
 
 void ADC_I2C_PORT_init(void);
 void ADC_I2C_CLOCK_init(void);

@@ -169,9 +169,9 @@ static bool ads1115_poll(void) {
     case ads_init: // Start to convert AINx
       ads_n_reads = 0;
       i2c_write(ads_cfg[devnum].adr, ads_cfg[devnum].chan[chnum].cfg, 3);
-	  if (devnum < ADC_NDEVS-1 ) {	// Start up all ADS1115 devices
-        ++devnum;
-	  } else {
+	    if (devnum < ADC_NDEVS-1 ) {	// Start up all ADS1115 devices
+          ++devnum;
+	    } else {
         devnum = 0;
         ads_state = ads_read_cfg;
       }
@@ -200,14 +200,14 @@ static bool ads1115_poll(void) {
         (ads_ibuf[0] << 8) | ads_ibuf[1]); // Save converted value
       sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + I2C_ADC_ADS_NREGS, 
         ads_n_reads); // Save n_reads
-    if (devnum < ADC_NDEVS-1 ) {
-      ++devnum;
-      ads_state = ads_read_cfg;
-    } else {
-      devnum = 0;
-      if (++chnum > ADC_NCHS-1) chnum = 0;  // Do for each channel
-      ads_state = ads_init;
-    }
+      if (devnum < ADC_NDEVS-1 ) {
+        ++devnum;
+        ads_state = ads_read_cfg;
+      } else {
+        devnum = 0;
+        if (++chnum > ADC_NCHS-1) chnum = 0;  // Do for each channel
+        ads_state = ads_init;
+      }
       return true;
     default:
       assert(false, __FILE__, __LINE__);

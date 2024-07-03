@@ -646,10 +646,10 @@ drivers:
     functionality: System
     api: HAL:HPL:GCLK
     configuration:
-      $input: 4800000
-      $input_id: Generic clock generator 1
-      RESERVED_InputFreq: 4800000
-      RESERVED_InputFreq_id: Generic clock generator 1
+      $input: 12000000
+      $input_id: External Crystal Oscillator 8-48MHz (XOSC1)
+      RESERVED_InputFreq: 12000000
+      RESERVED_InputFreq_id: External Crystal Oscillator 8-48MHz (XOSC1)
       _$freq_output_Generic clock generator 0: 48000000
       _$freq_output_Generic clock generator 1: 4800000
       _$freq_output_Generic clock generator 10: 12000000
@@ -985,46 +985,6 @@ drivers:
     variant: null
     clocks:
       domain_group: null
-  PM_I2C:
-    user_label: PM_I2C
-    definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::SERCOM1::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Async
-    functionality: I2C
-    api: HAL:Driver:I2C_Master_Async
-    configuration:
-      i2c_master_advanced: false
-      i2c_master_arch_dbgstop: Keep running
-      i2c_master_arch_inactout: Disabled
-      i2c_master_arch_lowtout: false
-      i2c_master_arch_mexttoen: false
-      i2c_master_arch_runstdby: false
-      i2c_master_arch_sdahold: 300-600ns hold time
-      i2c_master_arch_sexttoen: false
-      i2c_master_arch_trise: 215
-      i2c_master_baud_rate: 100000
-    optional_signals: []
-    variant:
-      specification: SDA=0, SCL=1
-      required_signals:
-      - name: SERCOM1/PAD/0
-        pad: PA16
-        label: SDA
-      - name: SERCOM1/PAD/1
-        pad: PA17
-        label: SCL
-    clocks:
-      domain_group:
-        nodes:
-        - name: Core
-          input: Generic clock generator 0
-          external: false
-          external_frequency: 0
-        - name: Slow
-          input: Generic clock generator 3
-          external: false
-          external_frequency: 0
-        configuration:
-          core_gclk_selection: Generic clock generator 0
-          slow_gclk_selection: Generic clock generator 3
   ADC_I2C:
     user_label: ADC_I2C
     definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::SERCOM2::driver_config_definition::I2C.Master.Standard~2FFast-mode::HAL:Driver:I2C.Master.Async
@@ -1210,17 +1170,17 @@ pads:
     mode: Digital output
     user_label: CO2_EXH
     configuration: null
-  C3P_SDA:
+  T_Ref:
     name: PA16
     definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PA16
-    mode: I2C
-    user_label: C3P_SDA
+    mode: Digital input
+    user_label: T_Ref
     configuration: null
-  C3P_SCL:
+  T_Sig:
     name: PA17
     definition: Atmel:SAME51_Drivers:0.0.1::SAME51J19A-MF::pad::PA17
-    mode: I2C
-    user_label: C3P_SCL
+    mode: Digital input
+    user_label: T_Sig
     configuration: null
   CO2_REF:
     name: PA18

@@ -61,6 +61,15 @@ static void commands_init(void) {
 	gpio_set_pin_direction(CAL_SPR, GPIO_DIRECTION_OUT);
 	gpio_set_pin_function(CAL_SPR, GPIO_PIN_FUNCTION_OFF);
 
+  // GPIO on PA16
+  gpio_set_pin_direction(T_Ref, GPIO_DIRECTION_IN);
+  gpio_set_pin_pull_mode(T_Ref, GPIO_PULL_OFF);
+  gpio_set_pin_function(T_Ref, GPIO_PIN_FUNCTION_OFF);
+
+  // GPIO on PA17
+  gpio_set_pin_direction(T_Sig, GPIO_DIRECTION_IN);
+  gpio_set_pin_pull_mode(T_Sig, GPIO_PULL_OFF);
+  gpio_set_pin_function(T_Sig, GPIO_PIN_FUNCTION_OFF);
 }
 
 static void update_status(uint16_t *status, uint8_t pin, uint16_t bit) {
@@ -144,6 +153,8 @@ static void cmd_poll(void) {
   update_status(&status, CO2_EXH, 0x0100);
   update_status(&status, CKT3_EN, 0x0200);
   update_status(&status, INV_ARM, 0x0400);
+  update_status(&status, T_Sig, 0x0800);
+  update_status(&status, T_Ref, 0x1000);
   sb_cache_update(cmd_cache, 0, status); // Make status bits true in high
 }
 
