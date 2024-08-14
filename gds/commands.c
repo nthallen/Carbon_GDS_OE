@@ -153,8 +153,10 @@ static void cmd_poll(void) {
   update_status(&status, CO2_EXH, 0x0100);
   update_status(&status, CKT3_EN, 0x0200);
   update_status(&status, INV_ARM, 0x0400);
+#if RECORD_PM_STATUS
   update_status(&status, T_Sig, 0x0800);
   update_status(&status, T_Ref, 0x1000);
+#endif
   sb_cache_update(cmd_cache, 0, status); // Make status bits true in high
 }
 

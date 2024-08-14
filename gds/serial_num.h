@@ -44,15 +44,27 @@
 #ifndef SERIAL_NUM_H_INCLUDED
 #define SERIAL_NUM_H_INCLUDED
 
-/** 
+/**
+ * GDS_OE
+ * This is the GDS_OE project, not to be confused with GDS. They
+ * both support the same hardware, but have different START definitions.
+ *
  * GDS Firmware Rev : SUBBUS_BOARD_FIRMWARE_REV
  * SUBBUS_BOARD_FIRMWARE_REV "V1.0" : CDC USB Device, ADC engine
  * SUBBUS_BOARD_FIRMWARE_REV "V1.1" : TC Timer, on board MS8607 PTRH
+ * SUBBUS_BOARD_FIRMWARE_REV "V1.2" : Ensure SN/BOARD_IDs are allocated
+ * SUBBUS_BOARD_FIRMWARE_REV "V1.3" : Auto-clear ADC I2C Status
+ *   to the appropriate project. Carbon_GDS uses the PM_I2C interface,
+ *   while Carbon_GDS_OE uses those pins as digital inputs.
+ *   Serial Numbers for boards whose application conflicts with the
+ *   START configuration should be commented out.
+ * Any board programmed from this project should use the board
+ * type description "Optical Enclosure Shield"
  * 
  */
 // These parameters are common to all boards built with this code
-#define SUBBUS_BOARD_FIRMWARE_REV "V1.1"
-#define SUBBUS_BOARD_BUILD_NUM 3
+#define SUBBUS_BOARD_FIRMWARE_REV "V1.3"
+#define SUBBUS_BOARD_BUILD_NUM 5
 // #define HAVE_RTC
 
 /**
@@ -67,6 +79,7 @@
 #define SUBBUS_SUBFUNCTION_HEX 12
 #define SUBBUS_BOARD_BOARD_REV "Rev A"
 
+#if 0
 #if SUBBUS_BOARD_SN == 1
   #define SUBBUS_BOARD_ID 0 // Test
   #define SUBBUS_BOARD_BOARD_TYPE "Gas Deck Shield"
@@ -82,26 +95,28 @@
 #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
 #define SUBBUS_BOARD_LOCATION "Gas Deck"
 #endif
+#endif // 0
 
 #if SUBBUS_BOARD_SN == 3
   #define SUBBUS_BOARD_ID 2 // OE
-  #define SUBBUS_BOARD_BOARD_TYPE "Optical Enclosure Shield"
+  #define SUBBUS_BOARD_BOARD_TYPE "GDS_OE"
   #define SUBBUS_BOARD_INSTRUMENT_ID 10
   #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
-  #define SUBBUS_BOARD_LOCATION "CO2"
+  #define SUBBUS_BOARD_LOCATION "CO2 Optical Enclosure"
+  #define RECORD_PM_STATUS 1
 #endif
 
 #if SUBBUS_BOARD_SN == 4
   #define SUBBUS_BOARD_ID 3 // OE
-  #define SUBBUS_BOARD_BOARD_TYPE "Optical Enclosure Shield"
+  #define SUBBUS_BOARD_BOARD_TYPE "GDS_OE"
   #define SUBBUS_BOARD_INSTRUMENT_ID 10
   #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
-  #define SUBBUS_BOARD_LOCATION "Methane"
+  #define SUBBUS_BOARD_LOCATION "Methane Optical Enclosure"
 #endif
 
 #if SUBBUS_BOARD_SN == 5
 #define SUBBUS_BOARD_ID 4 // OE
-#define SUBBUS_BOARD_BOARD_TYPE "Bay Shield"
+#define SUBBUS_BOARD_BOARD_TYPE "GDS_OE"
 #define SUBBUS_BOARD_INSTRUMENT_ID 10
 #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
 #define SUBBUS_BOARD_LOCATION "Bay"

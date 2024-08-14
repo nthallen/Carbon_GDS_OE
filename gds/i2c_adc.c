@@ -125,25 +125,29 @@ typedef struct {
  */
  
 static dev_cfg ads_cfg[4] = {
-  { 0x48, { { { 0x01, 0xC1, 0x03 } },   //  AIN0: CAL_HI_HP ±6.144V
-			{ { 0x01, 0xD1, 0x03 } },   //  AIN1: CAL_HI_LP ±6.144V
-			{ { 0x01, 0xE1, 0x03 } },   //  AIN2: CAL_LO_HP ±6.144V
-			{ { 0x01, 0xF1, 0x03 } } }  //  AIN3: CAL_LO_LP ±6.144V
+  { 0x48, {
+      { { 0x01, 0xC1, 0x03 } },   //  AIN0/J3: CAL_HI_HP ±6.144V
+			{ { 0x01, 0xD1, 0x03 } },   //  AIN1/J4: CAL_HI_LP ±6.144V
+			{ { 0x01, 0xE1, 0x03 } },   //  AIN2/J5: CAL_LO_HP ±6.144V
+			{ { 0x01, 0xF1, 0x03 } } }  //  AIN3/J6: CAL_LO_LP ±6.144V
   },                            
-  { 0x49, { { { 0x01, 0xC1, 0x03 } },   //  AIN4: REF_HP ±6.144V
-			{ { 0x01, 0xD1, 0x03 } },   //  AIN5: REF_LP ±6.144V
-			{ { 0x01, 0xE3, 0x03 } },   //  AIN6: ROV1_T ±4.096V
-			{ { 0x01, 0xF3, 0x03 } } }  //  AIN7: ROV2_T ±4.096V
+  { 0x49, {
+      { { 0x01, 0xC1, 0x03 } },   //  AIN4/J7: REF_HP ±6.144V
+			{ { 0x01, 0xD1, 0x03 } },   //  AIN5/J8: REF_LP ±6.144V
+			{ { 0x01, 0xE3, 0x03 } },   //  AIN6/J11: ROV1_T ±4.096V
+			{ { 0x01, 0xF3, 0x03 } } }  //  AIN7/J12: ROV2_T ±4.096V
   },                            
-  { 0x4A, { { { 0x01, 0xC3, 0x03 } },   //  AIN8: CO2_MOT_T ±4.096V
+  { 0x4A, {
+      { { 0x01, 0xC3, 0x03 } },   //  AIN8: CO2_MOT_T ±4.096V
 			{ { 0x01, 0xD3, 0x03 } },   //  AIN9: CO2_PUMP_T ±4.096V
 			{ { 0x01, 0xE3, 0x03 } },   // AIN10: MM_MOT_T ±4.096V
 			{ { 0x01, 0xF3, 0x03 } } }  // AIN11: MM_PUMP_T ±4.096V
   },                            
-  { 0x4B, { { { 0x01, 0xC3, 0x03 } },   // AIN12: ROV3_T ±4.096V
-			{ { 0x01, 0xD3, 0x03 } },   // AIN13: ROV4_T ±4.096V
-			{ { 0x01, 0xE3, 0x03 } },   // AIN14: ROV5_T ±4.096V
-			{ { 0x01, 0xF3, 0x03 } } }  // AIN15: ROV6_T ±4.096V
+  { 0x4B, {
+      { { 0x01, 0xC3, 0x03 } },   // AIN12/J13: ROV3_T ±4.096V
+			{ { 0x01, 0xD3, 0x03 } },   // AIN13/J14: ROV4_T ±4.096V
+			{ { 0x01, 0xE3, 0x03 } },   // AIN14/J15: ROV5_T ±4.096V
+			{ { 0x01, 0xF3, 0x03 } } }  // AIN15/J16: ROV6_T ±4.096V
   }
 };
 
@@ -160,6 +164,15 @@ static uint8_t ads_ibuf[2];
 static int devnum = 0 ;
 static int chnum = 0 ;
 
+static bool I2C_ADC_chk_error()
+{
+  if (I2C_error_seen) {
+    ads_state = ads_init;
+    I2C_error_seen = 0;
+    return true;
+  }
+  return false;
+}
 /**
  * @return true if the bus is free and available for another device
  */
@@ -172,11 +185,15 @@ static bool ads1115_poll(void) {
 	    if (devnum < ADC_NDEVS-1 ) {	// Start up all ADS1115 devices
           ++devnum;
 	    } else {
+        if (sb_cache_was_read(i2c_adc_cache, I2C_ADC_STATUS_OFFSET)) {
+          sb_cache_update(i2c_adc_cache, I2C_ADC_STATUS_OFFSET, 0);
+        }
         devnum = 0;
         ads_state = ads_read_cfg;
       }
       return false;
     case ads_read_cfg: // Start read from config register
+      if (I2C_ADC_chk_error()) return true;
       i2c_read(ads_cfg[devnum].adr, ads_ibuf, 2);
       if (ads_ibuf[0] & 0x80) { // If high bit is set, conversion is complete
         ads_state = ads_reg0;
@@ -188,14 +205,17 @@ static bool ads1115_poll(void) {
       }
       return true;
     case ads_reg0: // Write pointer register to read from conversion reg[0]
+      if (I2C_ADC_chk_error()) return true;
       i2c_write(ads_cfg[devnum].adr, ads_r0_prep, 1);
       ads_state = ads_read_adc;
       return false;
     case ads_read_adc: // Start read from conversion reg
+      if (I2C_ADC_chk_error()) return true;
       i2c_read(ads_cfg[devnum].adr, ads_ibuf, 2);
       ads_state = ads_cache;
       return true;
     case ads_cache:
+      if (I2C_ADC_chk_error()) return true;
       sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + (devnum * 4) + chnum, 
         (ads_ibuf[0] << 8) | ads_ibuf[1]); // Save converted value
       sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + I2C_ADC_ADS_NREGS, 
@@ -241,9 +261,6 @@ static void I2C_async_error(struct i2c_m_async_desc *const i2c, int32_t error) {
   I2C_txfr_complete = true;
   I2C_error_seen = true;
   I2C_error = error;
-  if (sb_cache_was_read(i2c_adc_cache, I2C_ADC_STATUS_OFFSET)) {
-    sb_cache_update(i2c_adc_cache, I2C_ADC_STATUS_OFFSET, 0);
-  }
   if (I2C_error >= -7 && I2C_error <= -2) {
     uint16_t val = i2c_adc_cache[I2C_ADC_STATUS_OFFSET].cache;
     val |= (1 << (7+I2C_error));

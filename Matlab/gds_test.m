@@ -5,8 +5,9 @@
 % USB-based test of Gas Deck Shield functions. 
 % 
 
-cd C:\huarp\Carbon\FOCAL2023\code\gds\Carbon_GDS\Matlab
+% cd C:\huarp\Carbon\FOCAL2023\code\gds\Carbon_GDS\Matlab
 % cd C:\Users\nort\Documents\Documents\Exp\Boards\  ???  \Matlab
+cd C:\cygwin64\home\nta891\Exp\Boards\Carbon_GDS_OE\Matlab
 %%
 serial_port_clear();
 %%
