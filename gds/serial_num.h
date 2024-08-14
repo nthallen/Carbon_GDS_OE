@@ -53,11 +53,13 @@
  * SUBBUS_BOARD_FIRMWARE_REV "V1.0" : CDC USB Device, ADC engine
  * SUBBUS_BOARD_FIRMWARE_REV "V1.1" : TC Timer, on board MS8607 PTRH
  * SUBBUS_BOARD_FIRMWARE_REV "V1.2" : Ensure SN/BOARD_IDs are allocated
- * SUBBUS_BOARD_FIRMWARE_REV "V1.3" : Auto-clear ADC I2C Status
  *   to the appropriate project. Carbon_GDS uses the PM_I2C interface,
  *   while Carbon_GDS_OE uses those pins as digital inputs.
  *   Serial Numbers for boards whose application conflicts with the
  *   START configuration should be commented out.
+ * SUBBUS_BOARD_FIRMWARE_REV "V1.3" : Auto-clear ADC I2C Status,
+ *   Handle I2C errors correctly to resolve power-up issues.
+ *
  * Any board programmed from this project should use the board
  * type description "Optical Enclosure Shield"
  * 
