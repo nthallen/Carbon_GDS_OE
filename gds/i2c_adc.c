@@ -1,10 +1,10 @@
 /************************************************************************/
-/* 1:16 PM 5/24/2023	file i2c_adc.c Carbon_GDS
-	
-	Feather based Carbon Gas Deck Shield board ADS1115 Driver 
-	16 Single -ended channels. Custom range per channel. 
-	
-	NOTE: Needs RTC timer module for delays
+/* 1:16 PM 5/24/2023 file i2c_adc.c Carbon_GDS
+
+  Feather based Carbon Gas Deck Shield board ADS1115 Driver
+  16 Single -ended channels. Custom range per channel.
+
+  NOTE: Needs RTC timer module for delays
 
  ************************************************************************/
 #include <utils.h>
@@ -80,7 +80,7 @@ static subbus_cache_word_t i2c_adc_cache[I2C_ADC_HIGH_ADDR-I2C_ADC_BASE_ADDR+1] 
 };
 
 /** ADS1115 Config Register
- *	SE Temperature example: Write to config register [01] 0xC3 0x03:
+ *  SE Temperature example: Write to config register [01] 0xC3 0x03:
  *   0x01: Address Pointer register value specifying config register
  *   0xC303:
  *     OS[15] = 1: Single Conversion
@@ -95,17 +95,17 @@ static subbus_cache_word_t i2c_adc_cache[I2C_ADC_HIGH_ADDR-I2C_ADC_BASE_ADDR+1] 
  */
 
 /*******************************************************************/
-// ADS1115 Cofiguration commands: 
-//	I2C Address and config register for all 16 channels
-//	Must have same number of reads/device (i.e. ok to repeat differential 
-//	cfg command to match number of SE reads.
-//	No need to arrange channels in correct order: 
-//    AIN0[0:3], AIN1[0:3], AIN2[0:3], AIN3[0:3] 
-//	
+// ADS1115 Cofiguration commands:
+//  I2C Address and config register for all 16 channels
+//  Must have same number of reads/device (i.e. ok to repeat differential
+//  cfg command to match number of SE reads.
+//  No need to arrange channels in correct order:
+//    AIN0[0:3], AIN1[0:3], AIN2[0:3], AIN3[0:3]
+//
 /*******************************************************************/
-#define ADC_NDEVS 4		// Number of ADS1115 devices on i2c chain
-#define ADC_NCHS 4		// Number of  channels on each ADS1115
-#define ADC_NCHANNELS (ADC_NDEVS * ADC_NCHS)	// Total number of ADC channels
+#define ADC_NDEVS 4 // Number of ADS1115 devices on i2c chain
+#define ADC_NCHS 4  // Number of  channels on each ADS1115
+#define ADC_NCHANNELS (ADC_NDEVS * ADC_NCHS)  // Total number of ADC channels
 
 // static uint8_t ads_slave_addr[ADC_NDEVS] = { 0x48, 0x49, 0x4A, 0x4B }; // 7-bit i2c address
 
@@ -123,38 +123,38 @@ typedef struct {
   dev_cfg ads1115[4];
 } adc_cfg;
  */
- 
+
 static dev_cfg ads_cfg[4] = {
   { 0x48, {
       { { 0x01, 0xC1, 0x03 } },   //  AIN0/J3: CAL_HI_HP ±6.144V
-			{ { 0x01, 0xD1, 0x03 } },   //  AIN1/J4: CAL_HI_LP ±6.144V
-			{ { 0x01, 0xE1, 0x03 } },   //  AIN2/J5: CAL_LO_HP ±6.144V
-			{ { 0x01, 0xF1, 0x03 } } }  //  AIN3/J6: CAL_LO_LP ±6.144V
-  },                            
+      { { 0x01, 0xD1, 0x03 } },   //  AIN1/J4: CAL_HI_LP ±6.144V
+      { { 0x01, 0xE1, 0x03 } },   //  AIN2/J5: CAL_LO_HP ±6.144V
+      { { 0x01, 0xF1, 0x03 } } }  //  AIN3/J6: CAL_LO_LP ±6.144V
+  },
   { 0x49, {
       { { 0x01, 0xC1, 0x03 } },   //  AIN4/J7: REF_HP ±6.144V
-			{ { 0x01, 0xD1, 0x03 } },   //  AIN5/J8: REF_LP ±6.144V
-			{ { 0x01, 0xE3, 0x03 } },   //  AIN6/J11: ROV1_T ±4.096V
-			{ { 0x01, 0xF3, 0x03 } } }  //  AIN7/J12: ROV2_T ±4.096V
-  },                            
+      { { 0x01, 0xD1, 0x03 } },   //  AIN5/J8: REF_LP ±6.144V
+      { { 0x01, 0xE3, 0x03 } },   //  AIN6/J11: ROV1_T ±4.096V
+      { { 0x01, 0xF3, 0x03 } } }  //  AIN7/J12: ROV2_T ±4.096V
+  },
   { 0x4A, {
       { { 0x01, 0xC3, 0x03 } },   //  AIN8: CO2_MOT_T ±4.096V
-			{ { 0x01, 0xD3, 0x03 } },   //  AIN9: CO2_PUMP_T ±4.096V
-			{ { 0x01, 0xE3, 0x03 } },   // AIN10: MM_MOT_T ±4.096V
-			{ { 0x01, 0xF3, 0x03 } } }  // AIN11: MM_PUMP_T ±4.096V
-  },                            
+      { { 0x01, 0xD3, 0x03 } },   //  AIN9: CO2_PUMP_T ±4.096V
+      { { 0x01, 0xE3, 0x03 } },   // AIN10: MM_MOT_T ±4.096V
+      { { 0x01, 0xF3, 0x03 } } }  // AIN11: MM_PUMP_T ±4.096V
+  },
   { 0x4B, {
       { { 0x01, 0xC3, 0x03 } },   // AIN12/J13: ROV3_T ±4.096V
-			{ { 0x01, 0xD3, 0x03 } },   // AIN13/J14: ROV4_T ±4.096V
-			{ { 0x01, 0xE3, 0x03 } },   // AIN14/J15: ROV5_T ±4.096V
-			{ { 0x01, 0xF3, 0x03 } } }  // AIN15/J16: ROV6_T ±4.096V
+      { { 0x01, 0xD3, 0x03 } },   // AIN13/J14: ROV4_T ±4.096V
+      { { 0x01, 0xE3, 0x03 } },   // AIN14/J15: ROV5_T ±4.096V
+      { { 0x01, 0xF3, 0x03 } } }  // AIN15/J16: ROV6_T ±4.096V
   }
 };
 
 enum ads_state_t {ads_init, ads_read_cfg,
                   ads_reg0, ads_read_adc,
                   ads_cache,
-				  };
+          };
 static enum ads_state_t ads_state = ads_init;
 static uint16_t ads_n_reads;
 
@@ -177,14 +177,14 @@ static bool I2C_ADC_chk_error()
  * @return true if the bus is free and available for another device
  */
 static bool ads1115_poll(void) {
-  if ( !i2c_enabled || !I2C_txfr_complete ) return true;  
+  if ( !i2c_enabled || !I2C_txfr_complete ) return true;
   switch (ads_state) {
     case ads_init: // Start to convert AINx
       ads_n_reads = 0;
       i2c_write(ads_cfg[devnum].adr, ads_cfg[devnum].chan[chnum].cfg, 3);
-	    if (devnum < ADC_NDEVS-1 ) {	// Start up all ADS1115 devices
-          ++devnum;
-	    } else {
+      if (devnum < ADC_NDEVS-1 ) {  // Start up all ADS1115 devices
+        ++devnum;
+      } else {
         if (sb_cache_was_read(i2c_adc_cache, I2C_ADC_STATUS_OFFSET)) {
           sb_cache_update(i2c_adc_cache, I2C_ADC_STATUS_OFFSET, 0);
         }
@@ -216,9 +216,9 @@ static bool ads1115_poll(void) {
       return true;
     case ads_cache:
       if (I2C_ADC_chk_error()) return true;
-      sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + (devnum * 4) + chnum, 
+      sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + (devnum * 4) + chnum,
         (ads_ibuf[0] << 8) | ads_ibuf[1]); // Save converted value
-      sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + I2C_ADC_ADS_NREGS, 
+      sb_cache_update(i2c_adc_cache, I2C_ADC_ADS_OFFSET + I2C_ADC_ADS_NREGS,
         ads_n_reads); // Save n_reads
       if (devnum < ADC_NDEVS-1 ) {
         ++devnum;
@@ -290,31 +290,31 @@ static void i2c_adc_reset() {
 }
 //  End of I2C functions
 
-//	ADC_I2C Driver
+// ADC_I2C Driver
 void ADC_I2C_PORT_init(void)
 {
-	gpio_set_pin_pull_mode(ADC_SDA, GPIO_PULL_OFF);
-	gpio_set_pin_function(ADC_SDA, PINMUX_PA12C_SERCOM2_PAD0);
+  gpio_set_pin_pull_mode(ADC_SDA, GPIO_PULL_OFF);
+  gpio_set_pin_function(ADC_SDA, PINMUX_PA12C_SERCOM2_PAD0);
 
-	gpio_set_pin_pull_mode(ADC_SCL, GPIO_PULL_OFF);
-	gpio_set_pin_function(ADC_SCL, PINMUX_PA13C_SERCOM2_PAD1);
+  gpio_set_pin_pull_mode(ADC_SCL, GPIO_PULL_OFF);
+  gpio_set_pin_function(ADC_SCL, PINMUX_PA13C_SERCOM2_PAD1);
 }
 
 void ADC_I2C_CLOCK_init(void)
 {
-	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_CORE, CONF_GCLK_SERCOM2_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
-	hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_SLOW, CONF_GCLK_SERCOM2_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_CORE, CONF_GCLK_SERCOM2_CORE_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
+  hri_gclk_write_PCHCTRL_reg(GCLK, SERCOM2_GCLK_ID_SLOW, CONF_GCLK_SERCOM2_SLOW_SRC | (1 << GCLK_PCHCTRL_CHEN_Pos));
 
-	hri_mclk_set_APBBMASK_SERCOM2_bit(MCLK);
+  hri_mclk_set_APBBMASK_SERCOM2_bit(MCLK);
 }
 
 void ADC_I2C_init(void)
 {
-	ADC_I2C_CLOCK_init();
-	i2c_m_async_init(&ADC_I2C, SERCOM2);
-	ADC_I2C_PORT_init();
+  ADC_I2C_CLOCK_init();
+  i2c_m_async_init(&ADC_I2C, SERCOM2);
+  ADC_I2C_PORT_init();
 }
-//	End of ADC_I2C Driver
+//  End of ADC_I2C Driver
 
 // Main poll loop
 
