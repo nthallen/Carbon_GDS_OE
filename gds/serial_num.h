@@ -109,11 +109,14 @@
 #endif
 
 #if SUBBUS_BOARD_SN == 4
-  #define SUBBUS_BOARD_ID 3 // OE
+  // #define SUBBUS_BOARD_ID 3 // OE
   #define SUBBUS_BOARD_BOARD_TYPE "GDS_OE"
   #define SUBBUS_BOARD_INSTRUMENT_ID 10
   #define SUBBUS_BOARD_INSTRUMENT "FOCAL"
-  #define SUBBUS_BOARD_LOCATION "Methane Optical Enclosure"
+  // #define SUBBUS_BOARD_LOCATION "Methane Optical Enclosure"
+  // Switching to a clone of SN5
+  #define SUBBUS_BOARD_ID 4 // OE
+  #define SUBBUS_BOARD_LOCATION "Bay"
 #endif
 
 #if SUBBUS_BOARD_SN == 5
